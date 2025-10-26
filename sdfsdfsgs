@@ -1,0 +1,436 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ScriptVerseDesyncUnPatchedForever"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent = playerGui
+
+-- Container pour l'ombre
+local shadowContainer = Instance.new("Frame")
+shadowContainer.Size = UDim2.new(0, 360, 0, 200)
+shadowContainer.Position = UDim2.new(0.5, 0, 0.15, 0)
+shadowContainer.AnchorPoint = Vector2.new(0.5, 0.5)
+shadowContainer.BackgroundTransparency = 1
+shadowContainer.Parent = screenGui
+
+-- Ombre portée
+for i = 1, 5 do
+    local shadow = Instance.new("Frame")
+    shadow.Size = UDim2.new(1, i * 4, 1, i * 4)
+    shadow.Position = UDim2.new(0.5, 0, 0.5, i)
+    shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    shadow.BackgroundTransparency = 0.7 + (i * 0.05)
+    shadow.BorderSizePixel = 0
+    shadow.ZIndex = 0
+    shadow.Parent = shadowContainer
+    
+    local shadowCorner = Instance.new("UICorner")
+    shadowCorner.CornerRadius = UDim.new(0, 16)
+    shadowCorner.Parent = shadow
+end
+
+-- Frame principale avec gradient
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 340, 0, 180)
+mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.ClipsDescendants = true
+mainFrame.Parent = shadowContainer
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 16)
+mainCorner.Parent = mainFrame
+
+-- Gradient de fond
+local bgGradient = Instance.new("UIGradient")
+bgGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 30, 45)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 20, 30))
+})
+bgGradient.Rotation = 45
+bgGradient.Parent = mainFrame
+
+-- Effet de brillance en arrière-plan
+local shineEffect = Instance.new("Frame")
+shineEffect.Size = UDim2.new(2, 0, 2, 0)
+shineEffect.Position = UDim2.new(-0.5, 0, -0.5, 0)
+shineEffect.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+shineEffect.BackgroundTransparency = 0.95
+shineEffect.BorderSizePixel = 0
+shineEffect.Rotation = 45
+shineEffect.ZIndex = 1
+shineEffect.Parent = mainFrame
+
+-- Animation de l'effet de brillance
+spawn(function()
+    while true do
+        local tween = TweenService:Create(shineEffect, TweenInfo.new(3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Position = UDim2.new(0.5, 0, 0.5, 0)
+        })
+        tween:Play()
+        tween.Completed:Wait()
+        shineEffect.Position = UDim2.new(-0.5, 0, -0.5, 0)
+        task.wait(1)
+    end
+end)
+
+-- Bordure animée avec lueur
+local glowBorder = Instance.new("UIStroke")
+glowBorder.Color = Color3.fromRGB(100, 180, 255)
+glowBorder.Thickness = 3
+glowBorder.Transparency = 0
+glowBorder.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+glowBorder.Parent = mainFrame
+
+-- Animation de la bordure qui pulse et change de couleur
+spawn(function()
+    while true do
+        for i = 0, 1, 0.02 do
+            local hue = (i + tick() * 0.1) % 1
+            local r = math.floor(100 + 155 * math.abs(math.sin(hue * math.pi * 2)))
+            local g = math.floor(150 + 105 * math.abs(math.sin((hue + 0.33) * math.pi * 2)))
+            local b = 255
+            glowBorder.Color = Color3.fromRGB(r, g, b)
+            glowBorder.Thickness = 3 + math.sin(i * math.pi * 8) * 0.5
+            task.wait(0.05)
+        end
+    end
+end)
+
+-- Barre de titre avec icône
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 45)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = Color3.fromRGB(30, 35, 50)
+titleBar.BackgroundTransparency = 0.3
+titleBar.BorderSizePixel = 0
+titleBar.ZIndex = 2
+titleBar.Parent = mainFrame
+
+local titleBarCorner = Instance.new("UICorner")
+titleBarCorner.CornerRadius = UDim.new(0, 16)
+titleBarCorner.Parent = titleBar
+
+-- Masque pour le bas de la barre de titre
+local titleMask = Instance.new("Frame")
+titleMask.Size = UDim2.new(1, 0, 0, 16)
+titleMask.Position = UDim2.new(0, 0, 1, -16)
+titleMask.BackgroundColor3 = Color3.fromRGB(30, 35, 50)
+titleMask.BackgroundTransparency = 0.3
+titleMask.BorderSizePixel = 0
+titleMask.ZIndex = 2
+titleMask.Parent = titleBar
+
+-- Icône décorative
+local iconLabel = Instance.new("TextLabel")
+iconLabel.Size = UDim2.new(0, 35, 0, 35)
+iconLabel.Position = UDim2.new(0, 8, 0.5, 0)
+iconLabel.AnchorPoint = Vector2.new(0, 0.5)
+iconLabel.BackgroundTransparency = 1
+iconLabel.Text = "⚡"
+iconLabel.Font = Enum.Font.GothamBold
+iconLabel.TextSize = 24
+iconLabel.TextColor3 = Color3.fromRGB(100, 180, 255)
+iconLabel.ZIndex = 3
+iconLabel.Parent = titleBar
+
+-- Animation de l'icône
+spawn(function()
+    while true do
+        for i = 0, 1, 0.05 do
+            iconLabel.TextColor3 = Color3.fromRGB(
+                math.floor(100 + 155 * i),
+                math.floor(180 - 80 * i),
+                255
+            )
+            iconLabel.Rotation = math.sin(i * math.pi * 2) * 5
+            task.wait(0.05)
+        end
+    end
+end)
+
+-- Titre
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -100, 1, 0)
+titleLabel.Position = UDim2.new(0, 50, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "NEON DESYNC"
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 20
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.TextStrokeTransparency = 0.8
+titleLabel.TextStrokeColor3 = Color3.fromRGB(100, 180, 255)
+titleLabel.ZIndex = 3
+titleLabel.Parent = titleBar
+
+-- Bouton de fermeture décoratif
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -38, 0.5, 0)
+closeButton.AnchorPoint = Vector2.new(0, 0.5)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+closeButton.BackgroundTransparency = 0.3
+closeButton.BorderSizePixel = 0
+closeButton.Text = "×"
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 20
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.ZIndex = 3
+closeButton.Parent = titleBar
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(1, 0)
+closeCorner.Parent = closeButton
+
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+closeButton.MouseEnter:Connect(function()
+    TweenService:Create(closeButton, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
+end)
+
+closeButton.MouseLeave:Connect(function()
+    TweenService:Create(closeButton, TweenInfo.new(0.2), {BackgroundTransparency = 0.3}):Play()
+end)
+
+local desyncActive = false
+
+-- Bouton de toggle moderne
+local stateButton = Instance.new("TextButton")
+stateButton.Name = "StateButton"
+stateButton.Size = UDim2.new(0, 300, 0, 100)
+stateButton.Position = UDim2.new(0.5, 0, 0, 65)
+stateButton.AnchorPoint = Vector2.new(0.5, 0)
+stateButton.BackgroundColor3 = Color3.fromRGB(35, 40, 55)
+stateButton.BorderSizePixel = 0
+stateButton.Font = Enum.Font.GothamBold
+stateButton.TextSize = 42
+stateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+stateButton.Text = "OFF"
+stateButton.TextStrokeTransparency = 0.9
+stateButton.ZIndex = 2
+stateButton.Parent = mainFrame
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 12)
+buttonCorner.Parent = stateButton
+
+-- Gradient sur le bouton
+local buttonGradient = Instance.new("UIGradient")
+buttonGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 45, 60)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 35, 50))
+})
+buttonGradient.Rotation = 90
+buttonGradient.Parent = stateButton
+
+-- Bordure du bouton
+local buttonStroke = Instance.new("UIStroke")
+buttonStroke.Color = Color3.fromRGB(80, 120, 180)
+buttonStroke.Thickness = 2
+buttonStroke.Transparency = 0.3
+buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+buttonStroke.Parent = stateButton
+
+-- Indicateur de statut
+local statusIndicator = Instance.new("Frame")
+statusIndicator.Size = UDim2.new(0, 12, 0, 12)
+statusIndicator.Position = UDim2.new(0, 15, 0.5, 0)
+statusIndicator.AnchorPoint = Vector2.new(0, 0.5)
+statusIndicator.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+statusIndicator.BorderSizePixel = 0
+statusIndicator.ZIndex = 3
+statusIndicator.Parent = stateButton
+
+local indicatorCorner = Instance.new("UICorner")
+indicatorCorner.CornerRadius = UDim.new(1, 0)
+indicatorCorner.Parent = statusIndicator
+
+-- Animation du pulse de l'indicateur quand actif
+local indicatorPulse
+spawn(function()
+    while true do
+        if desyncActive then
+            for i = 0, 1, 0.1 do
+                statusIndicator.Size = UDim2.new(0, 12 + 3 * math.sin(i * math.pi), 0, 12 + 3 * math.sin(i * math.pi))
+                task.wait(0.05)
+            end
+        else
+            task.wait(0.1)
+        end
+    end
+end)
+
+-- Dragging functionality
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    shadowContainer.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = shadowContainer.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- Fonctions de desync
+local function enableMobileDesync()
+    local success, error = pcall(function()
+        local backpack = LocalPlayer:WaitForChild("Backpack")
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local humanoid = character:WaitForChild("Humanoid")
+        
+        local packages = ReplicatedStorage:WaitForChild("Packages", 5)
+        if not packages then warn("❌ Packages non trouvé") return false end
+        
+        local netFolder = packages:WaitForChild("Net", 5)
+        if not netFolder then warn("❌ Net folder non trouvé") return false end
+        
+        local useItemRemote = netFolder:WaitForChild("RE/UseItem", 5)
+        local teleportRemote = netFolder:WaitForChild("RE/QuantumCloner/OnTeleport", 5)
+        if not useItemRemote or not teleportRemote then warn("❌ Remotes non trouvés") return false end
+
+        local toolNames = {"Quantum Cloner", "Brainrot", "brainrot"}
+        local tool
+        for _, toolName in ipairs(toolNames) do
+            tool = backpack:FindFirstChild(toolName) or character:FindFirstChild(toolName)
+            if tool then break end
+        end
+        if not tool then
+            for _, item in ipairs(backpack:GetChildren()) do
+                if item:IsA("Tool") then tool=item break end
+            end
+        end
+
+        if tool and tool.Parent==backpack then
+            humanoid:EquipTool(tool)
+            task.wait(0.5)
+        end
+
+        if setfflag then setfflag("WorldStepMax", "-9999999999") end
+        task.wait(0.2)
+        useItemRemote:FireServer()
+        task.wait(1)
+        teleportRemote:FireServer()
+        task.wait(2)
+        if setfflag then setfflag("WorldStepMax", "-1") end
+        print("✅ Desync activé!")
+        return true
+    end)
+    if not success then
+        warn("❌ Erreur desync: " .. tostring(error))
+        return false
+    end
+    return success
+end
+
+local function disableMobileDesync()
+    pcall(function()
+        if setfflag then setfflag("WorldStepMax", "-1") end
+        print("❌ Desync désactivé!")
+    end)
+end
+
+-- Toggle button avec animations fluides
+stateButton.MouseButton1Click:Connect(function()
+    desyncActive = not desyncActive
+    
+    -- Animation de clic
+    local clickTween = TweenService:Create(stateButton, TweenInfo.new(0.1, Enum.EasingStyle.Back), {
+        Size = UDim2.new(0, 290, 0, 95)
+    })
+    clickTween:Play()
+    clickTween.Completed:Wait()
+    
+    local releaseTween = TweenService:Create(stateButton, TweenInfo.new(0.2, Enum.EasingStyle.Back), {
+        Size = UDim2.new(0, 300, 0, 100)
+    })
+    releaseTween:Play()
+    
+    if desyncActive then
+        local success = enableMobileDesync()
+        if success then
+            stateButton.Text = "ON"
+            TweenService:Create(stateButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(50, 200, 120)}):Play()
+            TweenService:Create(buttonStroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(100, 255, 180), Transparency = 0}):Play()
+            TweenService:Create(statusIndicator, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(100, 255, 180)}):Play()
+            buttonGradient.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 210, 130)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 180, 100))
+            })
+        else
+            desyncActive = false
+            stateButton.Text = "OFF"
+        end
+    else
+        disableMobileDesync()
+        stateButton.Text = "OFF"
+        TweenService:Create(stateButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(35, 40, 55)}):Play()
+        TweenService:Create(buttonStroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(80, 120, 180), Transparency = 0.3}):Play()
+        TweenService:Create(statusIndicator, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(150, 150, 150)}):Play()
+        buttonGradient.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 45, 60)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 35, 50))
+        })
+    end
+end)
+
+-- Effet hover élégant
+stateButton.MouseEnter:Connect(function()
+    TweenService:Create(buttonStroke, TweenInfo.new(0.2), {Thickness = 3}):Play()
+    TweenService:Create(stateButton, TweenInfo.new(0.2), {TextSize = 44}):Play()
+end)
+
+stateButton.MouseLeave:Connect(function()
+    TweenService:Create(buttonStroke, TweenInfo.new(0.2), {Thickness = 2}):Play()
+    TweenService:Create(stateButton, TweenInfo.new(0.2), {TextSize = 42}):Play()
+end)
+
+-- Reset au respawn
+LocalPlayer.CharacterAdded:Connect(function()
+    desyncActive = false
+    stateButton.Text = "OFF"
+    stateButton.BackgroundColor3 = Color3.fromRGB(35, 40, 55)
+    buttonStroke.Color = Color3.fromRGB(80, 120, 180)
+    buttonStroke.Transparency = 0.3
+    statusIndicator.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+    buttonGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 45, 60)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 35, 50))
+    })
+end)
